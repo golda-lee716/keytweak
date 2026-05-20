@@ -102,3 +102,17 @@ const char *kt_catalog_label(kt_key_id id)
     }
     return "?";
 }
+
+kt_key_id kt_catalog_id(const char *label)
+{
+    if (!label) {
+        return KT_KEY_ID_INVALID;
+    }
+
+    for (size_t i = 0; i < sizeof(k_labels) / sizeof(k_labels[0]); i++) {
+        if (strcmp(k_labels[i].label, label) == 0) {
+            return k_labels[i].id;
+        }
+    }
+    return KT_KEY_ID_INVALID;
+}

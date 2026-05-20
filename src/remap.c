@@ -33,15 +33,24 @@ static int ensure_capacity(kt_remap_table *t, size_t need)
     while (cap < need) {
         cap *= 2;
     }
-    kt_key_id *s = realloc(t->sources, cap * sizeof(*s));
-    kt_key_id *d = realloc(t->targets, cap * sizeof(*d));
-    if (!s || !d) {
-        free(s);
-        free(d);
+
+    kt_key_id *sources = malloc(cap * sizeof(*sources));
+    kt_key_id *targets = malloc(cap * sizeof(*targets));
+    if (!sources || !targets) {
+        free(sources);
+        free(targets);
         return -1;
     }
-    t->sources = s;
-    t->targets = d;
+
+    if (t->count > 0) {
+        memcpy(sources, t->sources, t->count * sizeof(*sources));
+        memcpy(targets, t->targets, t->count * sizeof(*targets));
+    }
+
+    free(t->sources);
+    free(t->targets);
+    t->sources = sources;
+    t->targets = targets;
     t->capacity = cap;
     return 0;
 }
