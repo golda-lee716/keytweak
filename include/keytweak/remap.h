@@ -16,4 +16,8 @@ void kt_remap_free(kt_remap_table *t);
 int kt_remap_set(kt_remap_table *t, kt_key_id from, kt_key_id to);
 kt_key_id kt_remap_lookup(const kt_remap_table *t, kt_key_id from);
 
+int kt_remap_install(const kt_remap_table *t);
+void kt_remap_uninstall(void);
+int kt_remap_runloop(void);
+
 #endif

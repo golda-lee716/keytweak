@@ -12,6 +12,7 @@ static void print_usage(const char *prog)
 {
     printf("Usage: %s [--list] [--help] [--remap <from>=<to>...]\n", prog);
     printf("Example: %s --remap Caps=Esc --remap F1=F12\n", prog);
+    printf("Repeat --remap to define multiple key translations.\n");
 }
 
 static void print_layout_summary(const kt_layout_snapshot *snap)
@@ -126,15 +127,23 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (remaps.count == 0 && layout.key_count >= 2) {
-        kt_key_id a = layout.keys[0].id;
-        kt_key_id b = layout.keys[1].id;
-        kt_remap_set(&remaps, a, b);
-        printf("Example remap: %s -> %s\n", kt_catalog_label(a), kt_catalog_label(b));
-    }
+    if (remaps.count == 0) {
+        printf("No remaps configured. Use --remap <from>=<to> to enable live remapping.\n");
+    } else {
+        for (size_t i = 0; i < remaps.count; i++) {
+            printf("Remap %s -> %s\n", kt_catalog_label(remaps.sources[i]), kt_catalog_label(remaps.targets[i]));
+        }
 
-    for (size_t i = 0; i < remaps.count; i++) {
-        printf("Remap %s -> %s\n", kt_catalog_label(remaps.sources[i]), kt_catalog_label(remaps.targets[i]));
+        if (kt_remap_install(&remaps) != 0) {
+            fprintf(stderr, "Failed to install remap hook.\n");
+            kt_remap_free(&remaps);
+            kt_layout_free(&layout);
+            return 1;
+        }
+
+        printf("Remapping active. Press Ctrl+C to exit.\n");
+        kt_remap_runloop();
+        kt_remap_uninstall();
     }
 
     kt_remap_free(&remaps);
