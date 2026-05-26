@@ -258,7 +258,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 1;
     }
 
-    HWND hwnd = CreateWindowExW(0, wc.lpszClassName, L"KeyTweak", WS_OVERLAPPEDWINDOW ^ WS_MAXIMIZEBOX,
+    HWND hwnd = CreateWindowExW(0, wc.lpszClassName, L"KeyTweak", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, 600, 430, NULL, NULL, hInstance, NULL);
     if (!hwnd) {
         return 1;
