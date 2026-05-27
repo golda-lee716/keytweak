@@ -18,5 +18,5 @@ target_include_directories(keytweak PRIVATE
 
 if(WIN32)
     target_compile_definitions(keytweak PRIVATE WIN32_LEAN_AND_MEAN UNICODE _UNICODE KEYTWEAK_PLATFORM_WIN32=1)
-    target_link_libraries(keytweak PRIVATE user32 gdi32)
+    target_link_libraries(keytweak PRIVATE user32 gdi32 comctl32)
 endif()
