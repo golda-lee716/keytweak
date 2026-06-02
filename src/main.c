@@ -61,10 +61,10 @@ static void set_status_text(HWND hwnd, const wchar_t *text, bool is_active)
     HWND status = GetDlgItem(hwnd, IDC_STATUS_TEXT);
     if (status) {
         SetWindowTextW(status, text);
-        if (is_active) {
-            SetTextColor(GetDC(status), COLOR_ACTIVE);
-        } else {
-            SetTextColor(GetDC(status), COLOR_INACTIVE);
+        HDC hdc = GetDC(status);
+        if (hdc) {
+            SetTextColor(hdc, is_active ? COLOR_ACTIVE : COLOR_INACTIVE);
+            ReleaseDC(status, hdc);
         }
     }
 }
@@ -72,13 +72,9 @@ static void set_status_text(HWND hwnd, const wchar_t *text, bool is_active)
 // Initialize and populate key combo boxes with all available keys
 static void populate_key_combos(HWND from_combo, HWND to_combo)
 {
-    // Add keys to combo boxes - get them from the layout
-    char key_list[4096] = {0};
-    int offset = 0;
-    
     for (size_t i = 0; i < g_layout.key_count; i++) {
         const char *label = kt_catalog_label(g_layout.keys[i].id);
-        if (label && offset < (int)sizeof(key_list) - strlen(label) - 1) {
+        if (label) {
             wchar_t buffer[256];
             if (utf8_to_utf16(buffer, ARRAYSIZE(buffer), label)) {
                 SendMessageW(from_combo, CB_ADDSTRING, 0, (LPARAM)buffer);

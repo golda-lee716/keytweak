@@ -16,17 +16,6 @@ int kt_layout_probe(kt_layout_snapshot *out)
 
 #else
 
-static int push_key(kt_layout_snapshot *snap, kt_physical_key k)
-{
-    kt_physical_key *next = realloc(snap->keys, (snap->key_count + 1) * sizeof(*next));
-    if (!next) {
-        return -1;
-    }
-    snap->keys = next;
-    snap->keys[snap->key_count++] = k;
-    return 0;
-}
-
 int kt_layout_probe(kt_layout_snapshot *out)
 {
     static const struct {
@@ -59,9 +48,13 @@ int kt_layout_probe(kt_layout_snapshot *out)
         {88, 0x58, 0, 25},
     };
 
-    kt_layout_snapshot snap = {0};
+    size_t key_count = sizeof(scan_table) / sizeof(scan_table[0]);
+    kt_physical_key *keys = malloc(key_count * sizeof(*keys));
+    if (!keys) {
+        return -1;
+    }
 
-    for (size_t i = 0; i < sizeof(scan_table) / sizeof(scan_table[0]); i++) {
+    for (size_t i = 0; i < key_count; i++) {
         uint16_t sc = scan_table[i].sc;
         UINT vk = MapVirtualKeyW((UINT)sc, MAPVK_VSC_TO_VK_EX);
         if (vk == 0) {
@@ -73,13 +66,11 @@ int kt_layout_probe(kt_layout_snapshot *out)
         k.vk = (uint16_t)vk;
         k.row = scan_table[i].row;
         k.col = scan_table[i].col;
-        if (push_key(&snap, k) != 0) {
-            kt_layout_free(&snap);
-            return -1;
-        }
+        keys[i] = k;
     }
 
-    *out = snap;
+    out->keys = keys;
+    out->key_count = key_count;
     return 0;
 }
 
